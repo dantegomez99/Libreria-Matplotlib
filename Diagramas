@@ -1,0 +1,141 @@
+#Diagrama de Líneas
+plt.figure(figsize=(16, 8))
+plt.plot(promedio_anual.index, promedio_anual.values, linestyle='-', color='blue', marker='o', markersize=6, label='Temperatura Media Anual')
+plt.scatter(max_year, max_value, color='red', zorder=10)
+plt.scatter(min_year, min_value, color='yellow', zorder=10)
+plt.text(max_year + 0.4 , max_value, f'Punto máximo\n{max_year}: {max_value:.2f}°C', fontsize=12, ha='left', va='top')
+plt.text(min_year + 0.4, min_value, f'Punto mínimo\n{min_year}: {min_value:.2f}°C', fontsize=12, ha='left', va='baseline')
+plt.title('Promedio de Temperaturas Medias por Año (1991-2019)',size=24)
+plt.xlabel('Año',size= 16)
+plt.ylabel('Temperatura Media (°C)',size =16)
+plt.xticks(range(1991, 2020, 2),rotation=45)
+plt.grid(axis='x', linestyle='--', alpha=0.7)
+plt.show()
+
+#Grafico de area
+plt.figure(figsize=(16, 8))
+plt.plot(promedio_anual.index, promedio_anual.values, linestyle='-', color='blue', marker='o', markersize=6, label='Temperatura Media Anual')
+plt.fill_between(promedio_anual.index, promedio_anual.values, color='blue' )
+plt.ylim(min(promedio_anual.values) - 1, max(promedio_anual.values) + 1)
+plt.scatter(max_year, max_value, color='red', zorder=10)
+plt.scatter(min_year, min_value, color='yellow', zorder=10)
+plt.text(max_year + 0.4 , max_value, f'Punto máximo\n{max_year}: {max_value:.2f}°C', fontsize=12, ha='left', va='top')
+plt.text(min_year + 0.4, min_value, f'Punto mínimo\n{min_year}: {min_value:.2f}°C', fontsize=12, ha='left', va='baseline')
+plt.title('Promedio de Temperaturas Medias por Año (1991-2019)',size=24)
+plt.xlabel('Año',size= 16)
+plt.ylabel('Temperatura Media (°C)',size =16)
+plt.xticks(range(1991, 2020, 2),rotation=45)
+plt.grid(axis='x', linestyle='--', alpha=0.7)
+plt.show()
+
+#Diagrama de caja y Bigotes
+temperaturas_medias = historico.pivot_table(index='año', columns='mes', values='media', aggfunc='mean')
+mes_orden = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+plt.figure(figsize=(16, 8))
+temperaturas_medias.boxplot(mes_orden)
+
+plt.title('Distribución de las Temperaturas Medias por Mes (1991-2019)')
+plt.xlabel('Mes')
+plt.ylabel('Temperatura Media (°C)')
+plt.xticks()
+plt.grid(axis='y', linestyle='--',alpha = 0.8)
+
+plt.show()
+
+
+#Gráfico de barras verticales
+plt.figure(figsize=(16,8))
+plt.bar(promedio_anual.index, promedio_anual.values,color='blue')
+plt.ylim(min(promedio_anual.values) - 1, max(promedio_anual.values) + 1)
+plt.title('Promedio de Temperaturas Medias por Año(1991-2019)')
+plt.xlabel('Año')
+plt.ylabel('Temperatura Media (°C)')
+plt.grid(axis='y',linestyle ='--',alpha = 1)
+plt.xticks(range(1991, 2020, 2))
+plt.show()
+
+
+#Gráfico de barras horizontales
+plt.figure(figsize=(16,8))
+plt.barh(promedio_anual.index, promedio_anual.values,color='blue')
+plt.title('Promedio de Temperaturas Medias por Año(1991-2019)')
+plt.xlabel('Año')
+plt.ylabel('Temperatura Media (°C)')
+plt.grid(axis='y',linestyle ='--',alpha = 0.8)
+plt.xticks(range(1, 29, 2))
+plt.show()
+
+
+#Histograma
+fig, ax = plt.subplots(figsize=(16, 8))
+
+ax.hist(promedio_anual.values, color='blue', alpha=1)
+ax.set_title('Histograma de Temperaturas Medias')
+ax.set_xlabel('Temperatura Media (°C)')
+ax.set_ylabel('Frecuencia')
+
+plt.show()
+
+#Diágrama de violín
+temperaturas_medias = historico.pivot_table(index='mes', columns='año', values='media', aggfunc='mean')
+mes_orden = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+
+plt.figure(figsize=(16, 8))
+
+
+for i, mes in enumerate(mes_orden):
+    datos_mes = historico[historico['mes'] == mes]['media']
+    plt.violinplot(datos_mes, positions=[i], showmeans=False, showmedians=True)
+
+
+for i, mes in enumerate(mes_orden):
+    mes_data = historico[historico['mes'] == mes]
+    plt.scatter([i]*len(mes_data), mes_data['media'], color='black', alpha=0.3)
+    plt.plot(i, mes_data['media'].mean(), marker='o', markersize=10, color='yellow', markeredgecolor='black')
+
+
+plt.title('Distribución de las Temperaturas Medias por Mes (1991-2019)',size = 24)
+plt.xlabel('Mes')
+plt.ylabel('Temperatura Media (°C)')
+plt.xticks(range(12), mes_orden)
+plt.grid(axis='y', linestyle='--', alpha=0.8)
+
+
+plt.tight_layout()
+plt.show()
+
+#Comparación entre grafico de caja y bigotes y grafico de violin
+temperaturas_medias = historico.pivot_table(index='mes', columns='año', values='media', aggfunc='mean')
+mes_orden = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+
+fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+
+# Dibujar el violin plot
+for i, mes in enumerate(mes_orden):
+    datos_mes = historico[historico['mes'] == mes]['media']
+    axs[0].violinplot(datos_mes, positions=[i], showmeans=False, showmedians=True)
+
+# Dibujar el boxplot
+axs[1].boxplot([historico[historico['mes'] == mes]['media'] for mes in mes_orden], positions=np.arange(len(mes_orden)))
+
+# Ajustar las etiquetas y el título para el violin plot
+axs[0].set_title('Violin Plot')
+axs[0].set_xlabel('Mes')
+axs[0].set_ylabel('Temperatura Media (°C)')
+axs[0].set_xticks(range(len(mes_orden)))
+axs[0].set_xticklabels(mes_orden)
+axs[0].grid(axis='y', linestyle='--', alpha=0.8)
+
+# Ajustar las etiquetas y el título para el boxplot
+axs[1].set_title('Boxplot')
+axs[1].set_xlabel('Mes')
+axs[1].set_ylabel('Temperatura Media (°C)')
+axs[1].set_xticks(range(len(mes_orden)))
+axs[1].set_xticklabels(mes_orden)
+axs[1].grid(axis='y', linestyle='--', alpha=0.8)
+
+# Mostrar el gráfico
+plt.tight_layout()
+plt.show()
