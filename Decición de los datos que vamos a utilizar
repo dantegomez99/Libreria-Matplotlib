@@ -1,0 +1,9 @@
+#Decidimos los datos que queremos utilizar
+historico = historico[historico['año'].between(1991, 2019)]
+promedio_anual = historico.groupby('año')['media'].mean()
+print(promedio_anual)
+#Sacamos los promedios
+max_year = promedio_anual.idxmax()
+min_year = promedio_anual.idxmin()
+max_value = promedio_anual.max()
+min_value = promedio_anual.min()
