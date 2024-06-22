@@ -15,6 +15,8 @@ Dante Gomez
 Julian Tellerin
 
 
+
+
 Agustin Almiron
 
 
@@ -48,3 +50,18 @@ Nuestro tp se trata de la libreria MAtplotlib, como lo menciona en el titulo, lo
 
 Podes encontrar los graficos de la libreria con sus respectivas explicaciones, promedios y ejemplos en:
 https://colab.research.google.com/drive/17FqZTiljc5mqpWhJqoxAcYi78bxc1Zep#scrollTo=FNZMyp6ICIna
+
+
+
+
+
+
+
+
+
+Acá los graficos de la libreria orientada en objetos:
+
+
+
+
+https://colab.research.google.com/drive/1O2vZPU-cSzxXOxTPui-75amri1_nlJab?usp=sharing#scrollTo=kW0zxXG-1ohP
