@@ -25,5 +25,5 @@ Nuestro tp se trata de la libreria MAtplotlib, como lo menciona en el titulo, lo
 
 
 
-Podes encontrar los graficos con sus respectivas explicaciones, promedios, graficos y ejemplos en:
+Podes encontrar los graficos de la libreria con sus respectivas explicaciones, promedios y ejemplos en:
 https://colab.research.google.com/drive/17FqZTiljc5mqpWhJqoxAcYi78bxc1Zep#scrollTo=FNZMyp6ICIna
