@@ -1,0 +1,264 @@
+#Importamos las librerias que vamos a utilizar
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+#clase padre
+class ClimaBase:
+    def __init__(self, url=None, data=None):
+        self.url = url
+        self.data = data
+        if self.url:
+            self.cargar_datos()
+
+    def cargar_datos(self):
+        if self.url:
+            self.data = pd.read_csv(self.url)
+            self.data = self.data[self.data["año"].between(1991, 2019)]
+
+    def obtener_datos(self):
+        return self.data
+
+# Subclases
+class CargaDatos(ClimaBase):
+    def __init__(self, url):
+        super().__init__(url)
+
+
+class Analisis(ClimaBase):
+    def __init__(self, data):
+        super().__init__(data=data)
+        self.media_prom = None
+        self.max_prom = None
+        self.min_prom = None
+        self.mes_orden = [
+            'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+            'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+        self.calcular_prom()
+        self.calcular_prom_max()
+        self.calcular_prom_min()
+        self.calcular_temperaturas_medias()
+        self.mostrar_estadisticas()
+
+    def calcular_prom(self):
+        self.media_prom = self.data.groupby("año")["media"].mean()
+
+    def calcular_prom_max(self):
+        self.max_prom = self.data.groupby("año")["máxima"].mean()
+
+    def calcular_prom_min(self):
+        self.min_prom = self.data.groupby("año")["mínima"].mean()
+
+    def calcular_temperaturas_medias(self):
+        self.temperaturas_medias = self.data.pivot_table(index='mes', columns='año', values='media', aggfunc='mean')
+        # Ordeno por meses
+        meses_dict = {'Enero': 1, 'Febrero': 2, 'Marzo': 3, 'Abril': 4, 'Mayo': 5, 'Junio': 6,
+                      'Julio': 7, 'Agosto': 8, 'Septiembre': 9, 'Octubre': 10, 'Noviembre': 11, 'Diciembre': 12}
+        self.temperaturas_medias['orden'] = self.temperaturas_medias.index.map(meses_dict)
+        self.temperaturas_medias.sort_values('orden', inplace=True)
+        self.temperaturas_medias.drop(columns=['orden'], inplace=True)
+
+    def mostrar_estadisticas(self):
+        print("=== Estadísticas de Temperaturas Anuales ===")
+        print(f"Promedio Anual de Temperaturas Mínimas: {self.min_prom.mean():.2f}°C")
+        print(f"Promedio Anual de Temperaturas Medias: {self.media_prom.mean():.2f}°C")
+        print(f"Promedio Anual de Temperaturas Máximas: {self.max_prom.mean():.2f}°C")
+        print()
+        print("=== Estadísticas Descriptivas de Temperaturas Medias ===")
+        print(self.media_prom.describe())
+        print()
+
+    def obtener_resultados(self):
+        return self.media_prom, self.max_prom, self.min_prom
+
+
+class Graficador(ClimaBase):
+    def __init__(self, data):
+        super().__init__(data=data)
+        self.media_prom = None
+        self.max_prom = None
+        self.min_prom = None
+
+    def actualizar_datos(self, media_prom, max_prom, min_prom):
+        self.media_prom = media_prom
+        self.max_prom = max_prom
+        self.min_prom = min_prom
+
+    def graficar_linea(self):
+        # Calculo max y min
+        max_year_media = self.media_prom.idxmax()
+        min_year_media = self.media_prom.idxmin()
+        max_value_media = self.media_prom.max()
+        min_value_media = self.media_prom.min()
+
+        max_year = self.max_prom.idxmax()
+        min_year = self.max_prom.idxmin()
+        max_value = self.max_prom.max()
+        min_value = self.max_prom.min()
+
+        max_year_min = self.min_prom.idxmax()
+        min_year_min = self.min_prom.idxmin()
+        max_value_min = self.min_prom.max()
+        min_value_min = self.min_prom.min()
+
+        fig, axs = plt.subplots(3, 1, figsize=(18,10))
+
+        # Temperaturas medias anuales
+        axs[0].plot(self.media_prom.index, self.media_prom.values, label='Media Anual', color='blue', marker='o', linestyle='-')
+        axs[0].axhline(y=max_value_media , color='black', linestyle='-.', linewidth=2)
+        axs[0].axhline(y=min_value_media, color='purple', linestyle='-.', linewidth=2)
+        axs[0].set_title('Promedio Anual de Temperaturas en Buenos Aires (1991-2019)')
+        axs[0].set_xlabel('Año')
+
+        axs[0].set_ylabel('Temperatura Media (°C)')
+        axs[0].set_xticks(range(1990, 2020, 2))
+        axs[0].legend()
+        axs[0].grid(True)
+
+        # Temperaturas máximas anuales
+        axs[1].plot(self.max_prom.index, self.max_prom.values, label='Máximo Anual', color='red', marker='o', linestyle='-')
+        axs[1].axhline(y=max_value, color='black', linestyle='-.', linewidth=2)
+        axs[1].axhline(y=min_value, color='purple', linestyle='-.', linewidth=2)
+        axs[1].set_title('Temperatura Máxima Anual en Buenos Aires (1991-2019)')
+        axs[1].set_xlabel('Año')
+        axs[1].set_ylabel('Temperatura Máxima (°C)')
+        axs[1].set_xticks(range(1990, 2020, 2))
+        axs[1].legend()
+        axs[1].grid(True)
+
+        # Temperaturas mínimas anuales
+        axs[2].plot(self.min_prom.index, self.min_prom.values, label='Mínimo Anual', color='green', marker='o', linestyle='-')
+        axs[2].axhline(y=max_value_min, color='black', linestyle='-.', linewidth=2)
+        axs[2].axhline(y=min_value_min, color='purple', linestyle='-.', linewidth=2)
+        axs[2].set_title('Temperatura Mínima Anual en Buenos Aires (1991-2019)')
+        axs[2].set_xlabel('Año')
+
+        axs[2].set_ylabel('Temperatura Mínima (°C)')
+        axs[2].set_xticks(range(1990, 2020, 2))
+        axs[2].legend()
+        axs[2].grid(True)
+
+        plt.tight_layout(pad=4.0)
+        plt.subplots_adjust(wspace=0.6)
+        plt.show()
+
+    def graficar_area(self):
+        # Calculo max y min
+        max_year = self.media_prom.idxmax()
+        min_year = self.media_prom.idxmin()
+        max_value_media = self.media_prom.max()
+        min_value_media = self.media_prom.min()
+
+        plt.figure(figsize=(16, 8))
+        plt.plot(self.media_prom.index, self.media_prom.values, linestyle='-', color='blue', marker='o', markersize=6, label='Temperatura Media Anual')
+        plt.fill_between(self.media_prom.index, self.media_prom.values, color='blue', alpha=0.3)
+        plt.ylim(min_value_media - 1, max_value_media + 1)
+        plt.axhline(y=max_value_media, color='black', linestyle='-.', linewidth=1)
+        plt.axhline(y=min_value_media, color='purple', linestyle='-.', linewidth=1)
+        plt.scatter(max_year, max_value_media, color='red', zorder=10)
+        plt.scatter(min_year, min_value_media, color='yellow', zorder=10)
+        plt.text(max_year + 0.4, max_value_media, f'Punto máximo promedio\n{max_year}: {max_value_media:.2f}°C', fontsize=12, ha='left', va='baseline')
+        plt.text(min_year + 0.4, min_value_media, f'Punto mínimo promedio\n{min_year}: {min_value_media:.2f}°C', fontsize=12, ha='left', va='baseline')
+        plt.title('Promedio de Temperaturas Medias por Año (1991-2019)', size=24)
+        plt.legend(loc='upper left')
+        plt.xlabel('Año', size=16)
+        plt.ylabel('Temperatura Media (°C)', size=16)
+        plt.xticks(range(1990, 2020, 2))
+        plt.grid(axis='x', linestyle='--', alpha=0.9)
+
+        plt.tight_layout(pad=5.0)
+        plt.show()
+
+    def graficar_barras(self):
+        plt.figure(figsize=(16, 8))
+        plt.bar(self.media_prom.index, self.media_prom.values, color='blue', alpha=0.7)
+        plt.title('Promedio de Temperaturas Medias por Año (1991-2019)', size=24)
+        plt.axhline(y=self.media_prom.mean(), color='black', linestyle='--', linewidth=1)
+        plt.xlabel('Año', size=16)
+        plt.ylabel('Temperatura Media (°C)', size=16)
+        plt.xticks(range(1991, 2020, 2))
+        plt.ylim(min(self.media_prom.values) - 1, max(self.media_prom.values) + 1)
+        plt.grid(axis='x', linestyle='--', alpha=0.7)
+
+        plt.tight_layout(pad=5.0)
+        plt.show()
+
+    def graficar_histograma(self):
+        plt.figure(figsize=(16, 8))
+        plt.hist(self.media_prom.values, bins=10, color='blue', alpha=0.7)
+        plt.title('Histograma de Temperaturas Medias por Año (1991-2019)', size=24)
+        plt.xlim(min(self.media_prom.values) - 1, max(self.media_prom.values) + 1)
+        plt.xlabel('Temperatura Media (°C)', size=16)
+        plt.ylabel('Frecuencia', size=16)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+
+        plt.tight_layout(pad=5.0)
+        plt.show()
+
+    def graficar_boxplot(self):
+        plt.figure(figsize=(16, 8))
+        plt.boxplot([self.min_prom.values, self.media_prom.values, self.max_prom.values],
+                    labels=['Temperatura Mínima', 'Temperatura Media', 'Temperatura Máxima'], vert=False)
+        plt.title('Temperaturas Mínima, Media y Máxima (1991-2019)', size=24)
+        plt.xlabel('Temperatura (°C)', size=16)
+
+        plt.legend()
+
+        plt.xlim(13, 25)
+        plt.xticks(range(13, 26, 1))
+
+        plt.grid(axis='y', linestyle='--')
+        plt.grid(axis='x', linestyle='--', alpha=0.8)
+
+        plt.tight_layout(pad=5.0)
+        plt.show()
+
+    def graficar_violin_y_boxplot(self):
+        fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+
+        # Violin plot
+        for i, mes in enumerate(self.data['mes'].unique()):
+            datos_mes = self.data[self.data['mes'] == mes]['media']
+            axs[0].violinplot(datos_mes, positions=[i], showmeans=False, showmedians=True)
+
+        # Boxplot
+        axs[1].boxplot([self.data[self.data['mes'] == mes]['media'] for mes in self.data['mes'].unique()],
+                       positions=np.arange(len(self.data['mes'].unique())))
+
+        #Grafico de violinplot
+        axs[0].set_title('Violin Plot')
+        axs[0].set_xlabel('Mes')
+        axs[0].set_ylabel('Temperatura Media (°C)')
+        axs[0].set_xticks(range(len(self.data['mes'].unique())))
+
+        axs[0].set_xticklabels(self.data['mes'].unique())
+        axs[0].grid(axis='y', linestyle='--', alpha=0.8)
+
+        #Grafico de caja y bigotes
+        axs[1].set_title('Boxplot')
+        axs[1].set_xlabel('Mes')
+        axs[1].set_ylabel('Temperatura Media (°C)')
+        axs[1].set_xticks(range(len(self.data['mes'].unique())))
+        axs[1].set_xticklabels(self.data['mes'].unique())
+        axs[1].grid(axis='y', linestyle='--', alpha=0.8)
+
+
+        plt.tight_layout(pad=8.0)
+        plt.show()
+
+
+url = "https://cdn.buenosaires.gob.ar/datosabiertos/datasets/direccion-general-de-estadisticas-y-censos/registro-temperatura-ciudad/historico_temperaturas.csv"
+carga_datos = CargaDatos(url)
+data = carga_datos.obtener_datos()
+
+analisis = Analisis(data)
+media_prom, max_prom, min_prom = analisis.obtener_resultados()
+
+graficador = Graficador(data)
+graficador.actualizar_datos(media_prom, max_prom, min_prom)
+graficador.graficar_linea()
+graficador.graficar_area()
+graficador.graficar_barras()
+graficador.graficar_histograma()
+graficador.graficar_boxplot()
+graficador.graficar_violin_y_boxplot()
